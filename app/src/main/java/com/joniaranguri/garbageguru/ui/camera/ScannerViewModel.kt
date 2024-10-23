@@ -4,17 +4,20 @@ import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraDevice
 import android.util.Log
+import android.view.TextureView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import com.joniaranguri.garbageguru.controllers.CameraController
+import com.joniaranguri.garbageguru.domain.MaterialDetails
 import com.joniaranguri.garbageguru.domain.Photo
+import kotlinx.coroutines.delay
 
 /**
  * ViewModel for managing camera operations and photo capturing.
  */
-class CameraViewModel(private val cameraController: CameraController) : ViewModel() {
+class ScannerViewModel(private val cameraController: CameraController) : ViewModel() {
     private val _photoLiveData: MutableLiveData<Photo> = MutableLiveData<Photo>()
     var photoLiveData: LiveData<Photo> = _photoLiveData
     private val photoPathObserver =
@@ -25,6 +28,9 @@ class CameraViewModel(private val cameraController: CameraController) : ViewMode
             _photoLiveData.postValue(Photo(photoUri))
         }
 
+    private val _materialDetailsLiveData: MutableLiveData<MaterialDetails> = MutableLiveData<MaterialDetails>()
+    var materialDetailsLiveData: LiveData<MaterialDetails> = _materialDetailsLiveData
+
     init {
         observePhotoPath()
     }
@@ -32,11 +38,23 @@ class CameraViewModel(private val cameraController: CameraController) : ViewMode
     /**
      * Opens the camera using the provided state callback.
      *
-     * @param stateCallback the callback to handle camera state changes.
+     * @param textureView the textureView to show the camera preview.
      */
-    fun open(stateCallback: CameraDevice.StateCallback?) {
+    fun open(textureView: TextureView) {
         try {
-            cameraController.open(stateCallback)
+            cameraController.open(object : CameraDevice.StateCallback() {
+                override fun onOpened(camera: CameraDevice) {
+                   startPreview(textureView.surfaceTexture, camera)
+                }
+
+                override fun onDisconnected(camera: CameraDevice) {
+                    camera.close()
+                }
+
+                override fun onError(camera: CameraDevice, error: Int) {
+                    camera.close()
+                }
+            })
         } catch (e: CameraAccessException) {
             Log.e(TAG, "Failed to open camera", e)
         }
@@ -67,6 +85,19 @@ class CameraViewModel(private val cameraController: CameraController) : ViewMode
         }
     }
 
+    suspend fun getMaterialDetailsFromServer(photoUri: String){
+        delay(3000)
+        // TODO: Implement this with real call to the server
+        val mockedDetails = MaterialDetails(
+            name = "Botella de plástico",
+            materialType = "Plastico",
+            reward = 3,
+            savedCO2 = "6g"
+        )
+        _materialDetailsLiveData.postValue(mockedDetails)
+        return
+    }
+
     /**
      * Closes the camera.
      */
@@ -79,14 +110,14 @@ class CameraViewModel(private val cameraController: CameraController) : ViewMode
      */
     override fun onCleared() {
         super.onCleared()
-        cameraController.photoPathLiveData.removeObserver(photoPathObserver)
+        cameraController.getPhotoPathLiveData().removeObserver(photoPathObserver)
     }
 
     private fun observePhotoPath() {
-        cameraController.photoPathLiveData.observeForever(photoPathObserver)
+        cameraController.getPhotoPathLiveData().observeForever(photoPathObserver)
     }
 
     companion object {
-        private val TAG: String = CameraViewModel::class.java.canonicalName
+        private val TAG: String = ScannerViewModel::class.java.canonicalName
     }
 }
