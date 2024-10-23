@@ -32,8 +32,8 @@ import com.joniaranguri.garbageguru.ui.recommendation.RecommendationActivity
 import kotlinx.coroutines.launch
 
 
-class CameraActivity : AppCompatActivity() {
-    private lateinit var cameraViewModel: CameraViewModel
+class ScannerActivity : AppCompatActivity() {
+    private lateinit var scannerViewModel: ScannerViewModel
     private lateinit var loadingView: LoadingView
     private lateinit var recyclingRecommendationButton: MaterialButton
     private lateinit var processAnotherElementButton: MaterialButton
@@ -50,7 +50,7 @@ class CameraActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         this.enableEdgeToEdge()
-        setContentView(R.layout.activity_camera)
+        setContentView(R.layout.activity_scanner)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         ViewCompat.setOnApplyWindowInsetsListener(
             findViewById(R.id.main)
@@ -65,8 +65,8 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun initViewModel() {
-        val factory = CameraViewModelFactory(applicationContext)
-        cameraViewModel = ViewModelProvider(this, factory)[CameraViewModel::class.java]
+        val factory = ScannerViewModelFactory(applicationContext)
+        scannerViewModel = ViewModelProvider(this, factory)[ScannerViewModel::class.java]
     }
 
     private fun configureViews() {
@@ -91,20 +91,20 @@ class CameraActivity : AppCompatActivity() {
         takePhotoButton.visibility = View.VISIBLE
 
         takePhotoButton.setOnClickListener {
-            cameraViewModel.capturePhoto()
+            scannerViewModel.capturePhoto()
         }
 
-        cameraViewModel.photoLiveData.observe(this) { photo ->
+        scannerViewModel.photoLiveData.observe(this) { photo ->
             photo?.localUri?.let {
                 lifecycleScope.launch {
                     showTakenPhoto()
                     loadingView.show()
-                    cameraViewModel.getMaterialDetailsFromServer(it)
+                    scannerViewModel.getMaterialDetailsFromServer(it)
                 }
             }
         }
 
-        cameraViewModel.materialDetailsLiveData.observe(this) { materialDetails ->
+        scannerViewModel.materialDetailsLiveData.observe(this) { materialDetails ->
             materialDetails?.let {
                 showMaterialDetailsBottomSheet(materialDetails)
             }
@@ -154,7 +154,7 @@ class CameraActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        cameraViewModel.close()
+        scannerViewModel.close()
     }
 
     private fun requestCameraPermission() {
@@ -195,7 +195,7 @@ class CameraActivity : AppCompatActivity() {
     private fun openCamera() {
         photoPreviewImageView.visibility = View.GONE
         textureView.visibility = View.VISIBLE
-        cameraViewModel.open(textureView)
+        scannerViewModel.open(textureView)
     }
 
     private fun showTakenPhoto() {

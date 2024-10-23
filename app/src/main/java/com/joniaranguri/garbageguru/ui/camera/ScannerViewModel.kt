@@ -17,7 +17,7 @@ import kotlinx.coroutines.delay
 /**
  * ViewModel for managing camera operations and photo capturing.
  */
-class CameraViewModel(private val cameraController: CameraController) : ViewModel() {
+class ScannerViewModel(private val cameraController: CameraController) : ViewModel() {
     private val _photoLiveData: MutableLiveData<Photo> = MutableLiveData<Photo>()
     var photoLiveData: LiveData<Photo> = _photoLiveData
     private val photoPathObserver =
@@ -118,6 +118,6 @@ class CameraViewModel(private val cameraController: CameraController) : ViewMode
     }
 
     companion object {
-        private val TAG: String = CameraViewModel::class.java.canonicalName
+        private val TAG: String = ScannerViewModel::class.java.canonicalName
     }
 }

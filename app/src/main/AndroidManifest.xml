@@ -20,7 +20,7 @@
             android:name=".ui.recommendation.RecommendationActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.camera.CameraActivity"
+            android:name=".ui.camera.ScannerActivity"
             android:exported="false" />
         <activity
             android:name=".ui.home.HomeActivity"

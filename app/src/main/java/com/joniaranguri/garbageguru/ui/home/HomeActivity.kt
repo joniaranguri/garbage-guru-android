@@ -8,7 +8,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.button.MaterialButton
 import com.joniaranguri.garbageguru.R
-import com.joniaranguri.garbageguru.ui.camera.CameraActivity
+import com.joniaranguri.garbageguru.ui.camera.ScannerActivity
 
 class HomeActivity : AppCompatActivity() {
     private lateinit var takePhotoButton: MaterialButton
@@ -29,7 +29,7 @@ class HomeActivity : AppCompatActivity() {
 
     private fun configureViews() {
         takePhotoButton.setOnClickListener {
-            launchActivity(CameraActivity::class.java)
+            launchActivity(ScannerActivity::class.java)
         }
     }
 
