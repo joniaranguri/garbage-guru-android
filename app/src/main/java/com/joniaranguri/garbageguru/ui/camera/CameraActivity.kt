@@ -6,12 +6,12 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.SurfaceTexture
-import android.hardware.camera2.CameraDevice
 import android.os.Bundle
 import android.view.TextureView
 import android.view.TextureView.SurfaceTextureListener
 import android.view.View
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -36,12 +36,15 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var cameraViewModel: CameraViewModel
     private lateinit var loadingView: LoadingView
     private lateinit var recyclingRecommendationButton: MaterialButton
+    private lateinit var processAnotherElementButton: MaterialButton
+    private lateinit var takePhotoButton: MaterialButton
     private lateinit var materialResultsBottomSheet: FrameLayout
     private lateinit var materialTitleTextView: TextView
     private lateinit var savedCo2TextView: TextView
     private lateinit var materialTypeTextView: TextView
     private lateinit var rewardTextView: TextView
-    private var textureView: TextureView? = null
+    private lateinit var photoPreviewImageView: ImageView
+    private lateinit var textureView: TextureView
 
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,7 +70,9 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun configureViews() {
-        val takePhotoButton = findViewById<MaterialButton>(R.id.take_photo_button)
+        takePhotoButton = findViewById(R.id.take_photo_button)
+        photoPreviewImageView = findViewById(R.id.photo_preview_imageview)
+        processAnotherElementButton = findViewById(R.id.process_another_button)
         loadingView = findViewById(R.id.loading_view)
         textureView = findViewById(R.id.camera_preview)
         recyclingRecommendationButton = findViewById(R.id.get_recommendation_button)
@@ -79,6 +84,12 @@ class CameraActivity : AppCompatActivity() {
 
         collapseBottomSheet()
 
+        processAnotherElementButton.setOnClickListener {
+            hideTakenPhoto()
+        }
+        processAnotherElementButton.visibility = View.GONE
+        takePhotoButton.visibility = View.VISIBLE
+
         takePhotoButton.setOnClickListener {
             cameraViewModel.capturePhoto()
         }
@@ -86,6 +97,7 @@ class CameraActivity : AppCompatActivity() {
         cameraViewModel.photoLiveData.observe(this) { photo ->
             photo?.localUri?.let {
                 lifecycleScope.launch {
+                    showTakenPhoto()
                     loadingView.show()
                     cameraViewModel.getMaterialDetailsFromServer(it)
                 }
@@ -107,6 +119,8 @@ class CameraActivity : AppCompatActivity() {
         }
         loadingView.hide()
         expandBottomSheet()
+        processAnotherElementButton.visibility = View.VISIBLE
+        takePhotoButton.visibility = View.GONE
     }
 
     private fun expandBottomSheet() {
@@ -171,7 +185,7 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun handleCameraPermissionsGranted() {
-        if (textureView!!.isAvailable) {
+        if (textureView.isAvailable) {
             openCamera()
         } else {
             setSurfaceTextureListener()
@@ -179,23 +193,26 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun openCamera() {
-        cameraViewModel.open(object : CameraDevice.StateCallback() {
-            override fun onOpened(camera: CameraDevice) {
-                cameraViewModel.startPreview(textureView!!.surfaceTexture, camera)
-            }
+        photoPreviewImageView.visibility = View.GONE
+        textureView.visibility = View.VISIBLE
+        cameraViewModel.open(textureView)
+    }
 
-            override fun onDisconnected(camera: CameraDevice) {
-                camera.close()
-            }
+    private fun showTakenPhoto() {
+        photoPreviewImageView.setImageBitmap(textureView.bitmap)
+        photoPreviewImageView.visibility = View.VISIBLE
+        textureView.visibility = View.INVISIBLE
+    }
 
-            override fun onError(camera: CameraDevice, error: Int) {
-                camera.close()
-            }
-        })
+    private fun hideTakenPhoto() {
+        photoPreviewImageView.visibility = View.GONE
+        textureView.visibility = View.VISIBLE
+        processAnotherElementButton.visibility = View.GONE
+        takePhotoButton.visibility = View.VISIBLE
     }
 
     private fun setSurfaceTextureListener() {
-        textureView?.surfaceTextureListener = object : SurfaceTextureListener {
+        textureView.surfaceTextureListener = object : SurfaceTextureListener {
             override fun onSurfaceTextureAvailable(
                 surfaceTexture: SurfaceTexture, width: Int, height: Int
             ) {

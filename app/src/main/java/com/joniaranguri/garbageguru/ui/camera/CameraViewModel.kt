@@ -4,6 +4,7 @@ import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraDevice
 import android.util.Log
+import android.view.TextureView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -37,11 +38,23 @@ class CameraViewModel(private val cameraController: CameraController) : ViewMode
     /**
      * Opens the camera using the provided state callback.
      *
-     * @param stateCallback the callback to handle camera state changes.
+     * @param textureView the textureView to show the camera preview.
      */
-    fun open(stateCallback: CameraDevice.StateCallback?) {
+    fun open(textureView: TextureView) {
         try {
-            cameraController.open(stateCallback)
+            cameraController.open(object : CameraDevice.StateCallback() {
+                override fun onOpened(camera: CameraDevice) {
+                   startPreview(textureView.surfaceTexture, camera)
+                }
+
+                override fun onDisconnected(camera: CameraDevice) {
+                    camera.close()
+                }
+
+                override fun onError(camera: CameraDevice, error: Int) {
+                    camera.close()
+                }
+            })
         } catch (e: CameraAccessException) {
             Log.e(TAG, "Failed to open camera", e)
         }
