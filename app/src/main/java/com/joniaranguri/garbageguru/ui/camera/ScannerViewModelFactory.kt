@@ -3,7 +3,7 @@ package com.joniaranguri.garbageguru.ui.camera
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.joniaranguri.garbageguru.controllers.CameraController
+import com.joniaranguri.garbageguru.model.controllers.CameraController
 
 class ScannerViewModelFactory(context: Context) : ViewModelProvider.Factory {
     private val cameraController: CameraController = CameraController(context.applicationContext)

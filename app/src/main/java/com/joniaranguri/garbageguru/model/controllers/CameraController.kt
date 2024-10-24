@@ -1,4 +1,4 @@
-package com.joniaranguri.garbageguru.controllers
+package com.joniaranguri.garbageguru.model.controllers
 
 import android.annotation.SuppressLint
 import android.content.Context

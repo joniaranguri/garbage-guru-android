@@ -9,7 +9,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
-import com.joniaranguri.garbageguru.controllers.CameraController
+import com.joniaranguri.garbageguru.model.controllers.CameraController
 import com.joniaranguri.garbageguru.domain.MaterialDetails
 import com.joniaranguri.garbageguru.domain.Photo
 import kotlinx.coroutines.delay
