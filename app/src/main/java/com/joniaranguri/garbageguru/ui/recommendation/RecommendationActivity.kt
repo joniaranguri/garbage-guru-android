@@ -10,6 +10,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import com.joniaranguri.garbageguru.R
 import com.joniaranguri.garbageguru.domain.Photo
+import com.joniaranguri.garbageguru.domain.RecommendationDetails
 import com.joniaranguri.garbageguru.model.repository.RecommendationRepository
 
 class RecommendationActivity : AppCompatActivity() {
@@ -38,8 +39,16 @@ class RecommendationActivity : AppCompatActivity() {
 
     private fun handleIncomingPhoto() {
         val photo: Photo? = intent.getSerializableExtra(PHOTO_EXTRA) as? Photo?
-        photo?.localUri?.let {
-            viewModel.processImageAndSendRequest(it)
+        val materialType = intent.getStringExtra(MATERIAL_TYPE)
+        photo?.let {
+            materialType?.let {
+                viewModel.processImageAndSendRequest(
+                    recommendationDetails = RecommendationDetails(
+                        photo.localUri,
+                        materialType
+                    )
+                )
+            }
         }
     }
 
@@ -55,5 +64,6 @@ class RecommendationActivity : AppCompatActivity() {
 
     companion object {
         const val PHOTO_EXTRA = "PHOTO_EXTRA"
+        const val MATERIAL_TYPE = "MATERIAL_TYPE"
     }
 }
