@@ -1,9 +1,48 @@
 package com.joniaranguri.garbageguru.model.repository
 
+import com.joniaranguri.garbageguru.model.network.APIConfigurator
+import com.joniaranguri.garbageguru.model.network.api.RecommendationAPI
+import com.joniaranguri.garbageguru.model.network.api.RecommendationRequest
+import com.joniaranguri.garbageguru.model.network.api.RecommendationResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+
 class RecommendationRepository {
 
-    fun uploadPhoto(base64Image: String, callback: (String) -> Unit) {
-        //TODO: Implement real call to Recommendation API
-        callback.invoke("Recicla correctamente este elemento separándolo en el contenedor amarillo.")
+    private val apiService: RecommendationAPI
+
+    init {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(APIConfigurator.RECOMMENDATION_API_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        apiService = retrofit.create(RecommendationAPI::class.java)
+    }
+
+    fun getRecommendation(materialType: String, callback: (String) -> Unit) {
+        val request = RecommendationRequest(materialType = materialType)
+
+        apiService.getRecommendation(request).enqueue(object : Callback<RecommendationResponse> {
+            override fun onResponse(
+                call: Call<RecommendationResponse>,
+                response: Response<RecommendationResponse>
+            ) {
+                if (response.isSuccessful) {
+                    println(response.body())
+                    val recommendation = response.body()?.message ?: "No recommendation available"
+                    callback.invoke(recommendation)
+                } else {
+                    callback.invoke("Error: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<RecommendationResponse>, t: Throwable) {
+                callback.invoke("Failed: ${t.message}")
+            }
+        })
     }
 }

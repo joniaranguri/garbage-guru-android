@@ -1,8 +1,12 @@
 package com.joniaranguri.garbageguru.ui.camera
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraDevice
+import android.util.Base64
 import android.util.Log
 import android.view.TextureView
 import androidx.lifecycle.LiveData
@@ -12,12 +16,18 @@ import androidx.lifecycle.ViewModel
 import com.joniaranguri.garbageguru.model.controllers.CameraController
 import com.joniaranguri.garbageguru.domain.MaterialDetails
 import com.joniaranguri.garbageguru.domain.Photo
+import com.joniaranguri.garbageguru.model.repository.AIClassificationRepository
+import com.joniaranguri.garbageguru.model.repository.RecommendationRepository
 import kotlinx.coroutines.delay
+import java.io.ByteArrayOutputStream
 
 /**
  * ViewModel for managing camera operations and photo capturing.
  */
-class ScannerViewModel(private val cameraController: CameraController) : ViewModel() {
+class ScannerViewModel(
+    private val cameraController: CameraController,
+    private val aiClassificationRepository: AIClassificationRepository
+) : ViewModel() {
     private val _photoLiveData: MutableLiveData<Photo> = MutableLiveData<Photo>()
     var photoLiveData: LiveData<Photo> = _photoLiveData
     private val photoPathObserver =
@@ -28,7 +38,8 @@ class ScannerViewModel(private val cameraController: CameraController) : ViewMod
             _photoLiveData.postValue(Photo(photoUri))
         }
 
-    private val _materialDetailsLiveData: MutableLiveData<MaterialDetails> = MutableLiveData<MaterialDetails>()
+    private val _materialDetailsLiveData: MutableLiveData<MaterialDetails> =
+        MutableLiveData<MaterialDetails>()
     var materialDetailsLiveData: LiveData<MaterialDetails> = _materialDetailsLiveData
 
     init {
@@ -44,7 +55,7 @@ class ScannerViewModel(private val cameraController: CameraController) : ViewMod
         try {
             cameraController.open(object : CameraDevice.StateCallback() {
                 override fun onOpened(camera: CameraDevice) {
-                   startPreview(textureView.surfaceTexture, camera)
+                    startPreview(textureView.surfaceTexture, camera)
                 }
 
                 override fun onDisconnected(camera: CameraDevice) {
@@ -85,17 +96,20 @@ class ScannerViewModel(private val cameraController: CameraController) : ViewMod
         }
     }
 
-    suspend fun getMaterialDetailsFromServer(photoUri: String){
-        delay(3000)
-        // TODO: Implement this with real call to the server
-        val mockedDetails = MaterialDetails(
-            name = "Botella de plástico",
-            materialType = "Plastico",
-            reward = 3,
-            savedCO2 = "6g"
-        )
-        _materialDetailsLiveData.postValue(mockedDetails)
-        return
+    fun getMaterialDetailsFromServer(photoUri: String) {
+        val bitmap = rotateImage90Degrees(BitmapFactory.decodeFile(photoUri))
+        val base64Image = convertBitmapToBase64(bitmap)
+
+        aiClassificationRepository.classifyImage(base64Image) { materialType ->
+            _materialDetailsLiveData.postValue(
+                MaterialDetails(
+                    name = materialType,
+                    materialType = materialType,
+                    reward = 3,
+                    savedCO2 = "6g"
+                )
+            )
+        }
     }
 
     /**
@@ -115,6 +129,19 @@ class ScannerViewModel(private val cameraController: CameraController) : ViewMod
 
     private fun observePhotoPath() {
         cameraController.getPhotoPathLiveData().observeForever(photoPathObserver)
+    }
+
+    private fun convertBitmapToBase64(bitmap: Bitmap): String {
+        val outputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+        val byteArray = outputStream.toByteArray()
+        return Base64.encodeToString(byteArray, Base64.DEFAULT)
+    }
+
+    private fun rotateImage90Degrees(img: Bitmap): Bitmap {
+        val matrix = Matrix()
+        matrix.postRotate(90F)
+        return Bitmap.createBitmap(img, 0, 0, img.width, img.height, matrix, true)
     }
 
     companion object {
