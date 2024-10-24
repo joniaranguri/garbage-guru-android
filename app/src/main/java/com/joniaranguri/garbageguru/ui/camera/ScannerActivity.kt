@@ -115,7 +115,9 @@ class ScannerActivity : AppCompatActivity() {
         setUpMaterialDetailsViews(materialDetails)
         recyclingRecommendationButton.setOnClickListener {
             collapseBottomSheet()
-            launchRecommendationActivity(Photo(""))
+            scannerViewModel.photoLiveData.value?.let {
+                launchRecommendationActivity(it)
+            }
         }
         loadingView.hide()
         expandBottomSheet()
