@@ -14,5 +14,6 @@ data class RecommendationResponse(val message: String)
 
 interface RecommendationAPI {
     @GET("/recommendation")
-    fun getRecommendation(@Query("materialType") materialType: String): Call<RecommendationResponse>
+    fun getRecommendation(@Query("materialType") materialType: String): Call<String>
+    // TODO: Fix this endpoint in the server to receive and return JSON
 }
