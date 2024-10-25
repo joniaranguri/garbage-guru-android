@@ -24,9 +24,7 @@ class RecommendationRepository {
     }
 
     fun getRecommendation(materialType: String, callback: (String) -> Unit) {
-        val request = RecommendationRequest(materialType = materialType)
-
-        apiService.getRecommendation(request).enqueue(object : Callback<RecommendationResponse> {
+        apiService.getRecommendation(materialType).enqueue(object : Callback<RecommendationResponse> {
             override fun onResponse(
                 call: Call<RecommendationResponse>,
                 response: Response<RecommendationResponse>
