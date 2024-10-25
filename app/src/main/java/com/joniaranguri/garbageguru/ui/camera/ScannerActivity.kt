@@ -27,6 +27,7 @@ import com.google.android.material.button.MaterialButton
 import com.joniaranguri.garbageguru.R
 import com.joniaranguri.garbageguru.domain.MaterialDetails
 import com.joniaranguri.garbageguru.domain.Photo
+import com.joniaranguri.garbageguru.model.repository.AIClassificationRepository
 import com.joniaranguri.garbageguru.ui.common.LoadingView
 import com.joniaranguri.garbageguru.ui.recommendation.RecommendationActivity
 import kotlinx.coroutines.launch
@@ -65,7 +66,7 @@ class ScannerActivity : AppCompatActivity() {
     }
 
     private fun initViewModel() {
-        val factory = ScannerViewModelFactory(applicationContext)
+        val factory = ScannerViewModelFactory(applicationContext, AIClassificationRepository())
         scannerViewModel = ViewModelProvider(this, factory)[ScannerViewModel::class.java]
     }
 
@@ -116,7 +117,7 @@ class ScannerActivity : AppCompatActivity() {
         recyclingRecommendationButton.setOnClickListener {
             collapseBottomSheet()
             scannerViewModel.photoLiveData.value?.let {
-                launchRecommendationActivity(it)
+                launchRecommendationActivity(it, materialDetails.materialType)
             }
         }
         loadingView.hide()
@@ -143,9 +144,10 @@ class ScannerActivity : AppCompatActivity() {
         rewardTextView.text = materialDetails.reward.toString()
     }
 
-    private fun launchRecommendationActivity(photo: Photo) {
+    private fun launchRecommendationActivity(photo: Photo, materialType: String) {
         val intent = Intent(this, RecommendationActivity::class.java)
         intent.putExtra(RecommendationActivity.PHOTO_EXTRA, photo)
+        intent.putExtra(RecommendationActivity.MATERIAL_TYPE, materialType)
         startActivity(intent)
     }
 
