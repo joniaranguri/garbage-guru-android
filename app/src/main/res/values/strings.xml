@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">GarbageGuru</string>
     <string name="camera_permission_required">El permiso de acceso a la cámara es requerido para poder tomar fotos.</string>
-    <string name="how_to_recycle_this_element">¿Cómo reciclo este elemento?</string>
-    <string name="processing_image">Procesando imagen…</string>
+    <string name="how_to_recycle_this_element">How to recycle this element?</string>
+    <string name="processing_image">Processing image…</string>
+    <string name="scan_element">Scan element</string>
+    <string name="scan_another_element">Scan another element</string>
 </resources>

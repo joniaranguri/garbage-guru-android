@@ -1,6 +1,7 @@
 package com.joniaranguri.garbageguru.ui.recommendation
 
 import android.os.Bundle
+import android.text.Html
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
@@ -50,6 +51,8 @@ class RecommendationActivity : AppCompatActivity() {
                 )
             }
         }
+        findViewById<TextView>(R.id.material_title_textview).text =
+            materialType?.replaceFirstChar { it.uppercase() }
     }
 
     private fun setupObservers() {
@@ -58,8 +61,19 @@ class RecommendationActivity : AppCompatActivity() {
         }
 
         viewModel.recommendationText.observe(this) { recommendation ->
-            findViewById<TextView>(R.id.recycling_recommendation_textview).text = recommendation
+            val bulletPointText = recommendation.split(". ")
+                .filter { it.isNotBlank() }
+                .joinToString("<br><br>") { "• $it." }
+
+            val formattedText = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                Html.fromHtml(bulletPointText, Html.FROM_HTML_MODE_COMPACT)
+            } else {
+                Html.fromHtml(bulletPointText)
+            }
+
+            findViewById<TextView>(R.id.recycling_recommendation_textview).text = formattedText
         }
+
     }
 
     companion object {

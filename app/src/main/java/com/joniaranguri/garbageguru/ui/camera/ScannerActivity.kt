@@ -138,10 +138,11 @@ class ScannerActivity : AppCompatActivity() {
     }
 
     private fun setUpMaterialDetailsViews(materialDetails: MaterialDetails) {
-        materialTypeTextView.text = materialDetails.name
+        materialTypeTextView.text = materialDetails.name.replaceFirstChar { it.uppercase() }
         savedCo2TextView.text = materialDetails.savedCO2
         materialTypeTextView.text = materialDetails.materialType
         rewardTextView.text = materialDetails.reward.toString()
+        materialTitleTextView.text = materialDetails.name.replaceFirstChar { it.uppercase() }
     }
 
     private fun launchRecommendationActivity(photo: Photo, materialType: String) {
